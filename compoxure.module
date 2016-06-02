@@ -43,18 +43,6 @@ function _compoxure_retrieve_fragment($context) {
 
 }
 
-/**
- * Implements hook_permission().
- */
-function compoxure_permission() {
-  return array(
-    'retrieve compoxure fragment' => array(
-      'title' => t('Retrieve a fragment from compoxure'),
-      'description' => t('Allows users to retrieve a fragment from compoxure.'),
-    ),
-  );
-}
-
 
 /**
  * Implements hook_ctools_plugin_directory().
@@ -100,6 +88,11 @@ function compoxure_permission() {
     'title' => t('Manage compoxure'),
     'description' => t('Allow user to create, modify compoxure as well see revisions, revert to perticuler revision of the compoxure'),
   );
+  $permissions['retrieve compoxure fragment'] = array(
+    'title' => t('Retrieve a fragment from compoxure'),
+    'description' => t('Allows users to retrieve a fragment from compoxure.'),
+  );
+
   return $permissions;
 }
 
