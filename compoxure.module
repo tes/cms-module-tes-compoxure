@@ -14,7 +14,28 @@ define('COMPOXURE', 'admin/structure/compoxure/list');
  */
 function compoxure_services_resources() {
   return array(
-    'compoxure' => array(),
+    'compoxure' => array(
+      'retrieve' => array(
+        'help' => 'Retrieves a series of compoxure fragments.',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'compoxure',
+          'name' => 'compoxure.resource',
+        ),
+        'callback' => '_compoxure_retrieve_fragment',
+        'access arguments' => array('retrieve compoxure fragment'),
+        'access arguments append' => FALSE,
+        'args' => array(
+          'context' => array(
+            'name' => 'context',
+            'type' => 'string',
+            'description' => 'The context of fragments to return.',
+            'source' => array('path' => '0'),
+            'optional' => FALSE,
+          ),
+        ),
+      ),
+    ),
   );
 }
 
