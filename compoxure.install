@@ -40,6 +40,11 @@ function compoxure_schema() {
         'length' => '255',
         'description' => 'Unique ID for text-container exportible. Used to identify them programmatically.',
       ),
+      'context' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'The context of the fragment, which page does it belong to.',
+      ),
       'name' => array(
         'type' => 'varchar',
         'length' => '255',
@@ -82,6 +87,11 @@ function compoxure_schema() {
         'type' => 'varchar',
         'length' => '255',
         'description' => 'Title for compoxure.',
+      ),
+      'context' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'The context of the fragment, which page does it belong to.',
       ),
       'content' => array(
         'type' => 'text',
@@ -126,104 +136,4 @@ function compoxure_schema() {
  */
 function compoxure_uninstall() {
   drupal_uninstall_schema('compoxure');
-}
-
-/**
- * Implements hook_update_N().
- */
-function compoxure_update_7001(&$sandbox) {
-  $content_format = array(
-    'type' => 'varchar',
-    'length' => '255',
-    'not null' => FALSE,
-  );
-  db_add_field('compoxure_revision', 'content_format', $content_format);
-}
-
-/**
- * Implements hook_update_N().
- *
- * Adds the machine_name as name in revision table to hold the revisions.
- */
-function compoxure_update_7002(&$sandbox) {
-  $compoxures_machine_name = array(
-    'type' => 'varchar',
-    'length' => '255',
-  );
-  // db_add_field('compoxure_revision', 'name', $compoxures_machine_name);
-  db_drop_field('compoxure_revision', 'sid');
-}
-
-/**
- * Implements hook_update_N().
- *
- * Add name column to revision table.
- */
-function compoxure_update_7003(&$sandbox) {
-  $content_format = array(
-    'type' => 'varchar',
-    'length' => '255',
-    'not null' => FALSE,
-  );
-  db_add_field('compoxure_revision', 'name', $content_format);
-}
-
-/**
- * Implements hook_update_N().
- *
- * Add name column to revision table and Assign permissions to roles.
- */
-function compoxure_update_7004(&$sandbox) {
-  // Add field to revision table to have a revision on Title field.
-  $content_format = array(
-    'type' => 'varchar',
-    'length' => '255',
-    'not null' => FALSE,
-  );
-  db_add_field('compoxure_revision', 'title', $content_format);
-
-  // Update if any compoxure has a reviosion.
-  ctools_include('export');
-  $options = ctools_export_crud_load_all('compoxure');
-
-  foreach ($options as $key => $value) {
-    $num_updated = db_update('compoxure_revision')
-      ->fields(array(
-        'title' => $value->title,
-      ))
-      ->condition('name', $key)
-      ->condition('is_current', 1)
-      ->execute();
-  }
-
-  // Assign the user permissions.
-  $permissions = user_role_permissions(user_roles());
-  foreach ($permissions as $rid => $permission) {
-    $user = user_role_load($rid);
-    $permission = array_keys($permission);
-
-    $check_count = 0;
-    if (in_array('access compoxure list', $permission)) {
-      $check_count++;
-      user_role_revoke_permissions($rid, array('access compoxure list'));
-    }
-
-    if (in_array('edit compoxure content', $permission)) {
-      $check_count++;
-      user_role_revoke_permissions($rid, array('edit compoxure content'));
-    }
-
-    if ($check_count) {
-      user_role_grant_permissions($rid, array('manage compoxure'));
-    }
-  }
-}
-
-/**
- * Implements hook_update_N().
- *
- * Add index on name column in revision table.
- */
-function compoxure_update_7005(&$sandbox) {
-  db_add_index('compoxure_revision', 'name', array('name'));
 }
