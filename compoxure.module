@@ -39,6 +39,9 @@ function compoxure_services_resources() {
   );
 }
 
+function _compoxure_retrieve_fragment($context) {
+  
+}
 
 /**
  * Implements hook_ctools_plugin_directory().
