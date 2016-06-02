@@ -1,9 +1,9 @@
 <?php
+
 /**
  * @file
  * Class file for compoxure export ui
  */
-
 class compoxure_ctools_export_ui extends ctools_export_ui {
   /**
    * Menu callback to determine if an operation is accessible.
@@ -47,7 +47,8 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
 
     // If we need to do a token test, do it here.
     if (!empty($this->plugin['allowed operations'][$op]['token'])
-      && (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $op))) {
+      && (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $op))
+    ) {
       return FALSE;
     }
 
@@ -111,7 +112,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#description' => t('Title for the textarea-exportible.'),
       '#default_value' => ($default_compoxure->rid) ? $default_compoxure->title_revision : $default_compoxure->title,
     );
-    
+
     $form['context'] = array(
       '#type' => 'textfield',
       '#title' => t('Context'),
@@ -169,8 +170,8 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     $compoxure = ctools_export_crud_load($this->plugin['schema'], $item_name);
 
     $compoxure_revision = db_select('compoxure_revision', 'sr')
-                        ->fields('sr', array())
-                        ->condition('name', $item_name);
+      ->fields('sr', array())
+      ->condition('name', $item_name);
     if ($rid) {
       $compoxure_revision = $compoxure_revision->condition('rid', $rid);
     }
@@ -265,11 +266,20 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
 
     // If we have an admin title, make it the first row.
     if (!empty($this->plugin['export']['admin_title'])) {
-      $this->rows[$name]['data'][] = array('data' => check_plain($item->{$this->plugin['export']['admin_title']}), 'class' => array('ctools-export-ui-title'));
+      $this->rows[$name]['data'][] = array(
+        'data' => check_plain($item->{$this->plugin['export']['admin_title']}),
+        'class' => array('ctools-export-ui-title')
+      );
     }
-    $this->rows[$name]['data'][] = array('data' => check_plain($name), 'class' => array('ctools-export-ui-name'));
+    $this->rows[$name]['data'][] = array(
+      'data' => check_plain($name),
+      'class' => array('ctools-export-ui-name')
+    );
 
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->{$schema['export']['export type string']}), 'class' => array('ctools-export-ui-storage'));
+    $this->rows[$name]['data'][] = array(
+      'data' => check_plain($item->{$schema['export']['export type string']}),
+      'class' => array('ctools-export-ui-storage')
+    );
 
     // To display whether this has any description.
     $compoxure = $this->load_item($name);
@@ -277,7 +287,10 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     if ($compoxure->rid) {
       $label = 'Yes';
     }
-    $this->rows[$name]['data'][] = array('data' => $label, 'class' => array('ctools-export-ui-title'));
+    $this->rows[$name]['data'][] = array(
+      'data' => $label,
+      'class' => array('ctools-export-ui-title')
+    );
 
     // Short down the list of operation as per permission.
     $compoxure_operations = array();
@@ -296,7 +309,10 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       )
     );
 
-    $this->rows[$name]['data'][] = array('data' => $ops, 'class' => array('ctools-export-ui-operations'));
+    $this->rows[$name]['data'][] = array(
+      'data' => $ops,
+      'class' => array('ctools-export-ui-operations')
+    );
 
     // Add an automatic mouseover of the description if one exists.
     if (!empty($this->plugin['export']['admin_description'])) {
@@ -313,13 +329,28 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
   function list_table_header() {
     $header = array();
     if (!empty($this->plugin['export']['admin_title'])) {
-      $header[] = array('data' => t('Title'), 'class' => array('ctools-export-ui-title'));
+      $header[] = array(
+        'data' => t('Title'),
+        'class' => array('ctools-export-ui-title')
+      );
     }
 
-    $header[] = array('data' => t('Name'), 'class' => array('ctools-export-ui-name'));
-    $header[] = array('data' => t('Storage'), 'class' => array('ctools-export-ui-storage'));
-    $header[] = array('data' => t('Has Content/Revised'), 'class' => array('ctools-export-ui-name'));
-    $header[] = array('data' => t('Operations'), 'class' => array('ctools-export-ui-operations'));
+    $header[] = array(
+      'data' => t('Name'),
+      'class' => array('ctools-export-ui-name')
+    );
+    $header[] = array(
+      'data' => t('Storage'),
+      'class' => array('ctools-export-ui-storage')
+    );
+    $header[] = array(
+      'data' => t('Has Content/Revised'),
+      'class' => array('ctools-export-ui-name')
+    );
+    $header[] = array(
+      'data' => t('Operations'),
+      'class' => array('ctools-export-ui-operations')
+    );
 
     return $header;
   }
@@ -440,11 +471,11 @@ function _save_compoxure($values) {
  */
 function _compoxure_revision_reset_current($name) {
   $set_is_current = db_update('compoxure_revision')
-                    ->fields(array(
-                      'is_current' => 0,
-                    ))
-                    ->condition('name', $name)
-                    ->execute();
+    ->fields(array(
+      'is_current' => 0,
+    ))
+    ->condition('name', $name)
+    ->execute();
   return $set_is_current;
 }
 
@@ -509,11 +540,11 @@ function compoxure_revision_list($compoxure) {
     ),
   );
   $compoxure_revisions = db_select('compoxure_revision', 'sr')
-                      ->fields('sr', array())
-                      ->condition('name', $compoxure->name)
-                      ->orderBy('is_current', 'DESC')
-                      ->orderBy('rid', 'DESC')
-                      ->execute()->fetchAll();
+    ->fields('sr', array())
+    ->condition('name', $compoxure->name)
+    ->orderBy('is_current', 'DESC')
+    ->orderBy('rid', 'DESC')
+    ->execute()->fetchAll();
 
   $rows = array();
   $revert_permission = $delete_revision_permission = FALSE;
@@ -545,14 +576,14 @@ function compoxure_revision_list($compoxure) {
     // Build a list of all the accessible operations for the current node.
     $operations['view'] = array(
       'title' => t('View'),
-      'href' => SNIPPET_MENU_PREFIX . "/$compoxure->name/revision/$revision->rid/view",
+      'href' => COMPOXURE_PREFIX . "/$compoxure->name/revision/$revision->rid/view",
       'query' => $destination,
     );
 
     if ($revert_permission) {
       $operations['revert'] = array(
         'title' => t('Revert'),
-        'href' => SNIPPET_MENU_PREFIX . "/$compoxure->name/revision/$revision->rid/revertto",
+        'href' => COMPOXURE_PREFIX . "/$compoxure->name/revision/$revision->rid/revertto",
         'query' => $destination,
       );
     }
@@ -560,7 +591,7 @@ function compoxure_revision_list($compoxure) {
     if ($delete_revision_permission) {
       $operations['delete-version'] = array(
         'title' => t('Delete'),
-        'href' => SNIPPET_MENU_PREFIX . "/$compoxure->name/revision/$revision->rid/delete",
+        'href' => COMPOXURE_PREFIX . "/$compoxure->name/revision/$revision->rid/delete",
         'query' => $destination,
       );
     }
@@ -607,12 +638,12 @@ function compoxure_revision_revert($form, $form_state, $revision) {
         '%revision-date' => format_date($revision->timestamp),
       )
     ),
-    SNIPPET_MENU_PREFIX . "/$revision->name/revision",
+    COMPOXURE_PREFIX . "/$revision->name/revision",
     t(
       'This will revert the compoxure %revision-title to revision %revision-date',
       array(
         '%revision-title' => $revision->title,
-        '%revision-date'  => format_date($revision->timestamp),
+        '%revision-date' => format_date($revision->timestamp),
       )
     ),
     t('Revert'),
@@ -655,7 +686,7 @@ function compoxure_revision_revert_submit($form, &$form_state) {
       )
     )
   );
-  $form_state['redirect'] = SNIPPET_MENU_PREFIX . "/$compoxure_revision->name/revision";
+  $form_state['redirect'] = COMPOXURE_PREFIX . "/$compoxure_revision->name/revision";
 }
 
 /**
@@ -691,12 +722,12 @@ function compoxure_version_delete($form, $form_state, $revision) {
         '%revision-date' => format_date($revision->timestamp),
       )
     ),
-    SNIPPET_MENU_PREFIX . "/$revision->name/revision",
+    COMPOXURE_PREFIX . "/$revision->name/revision",
     t(
       'This will delete the compoxure %revision-title posted on %revision-date',
       array(
         '%revision-title' => $revision->title,
-        '%revision-date'  => format_date($revision->timestamp),
+        '%revision-date' => format_date($revision->timestamp),
       )
     ),
     t('Delete'),
@@ -753,7 +784,7 @@ function compoxure_version_delete_submit($form, &$form_state) {
       )
     )
   );
-  $form_state['redirect'] = SNIPPET_MENU_PREFIX . "/$compoxure_revision->name/revision";
+  $form_state['redirect'] = COMPOXURE_PREFIX . "/$compoxure_revision->name/revision";
 }
 
 /**

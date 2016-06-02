@@ -7,7 +7,7 @@
 /**
  * Menu item prefix.
  */
-define('COMPOXURE', 'admin/structure/compoxure/list');
+define('COMPOXURE_PREFIX', 'admin/structure/compoxure/list');
 
 /**
  * Implements hook_services_resources().
