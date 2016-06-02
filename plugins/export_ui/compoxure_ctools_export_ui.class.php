@@ -111,12 +111,12 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#description' => t('Title for the textarea-exportible.'),
       '#default_value' => ($default_compoxure->rid) ? $default_compoxure->title_revision : $default_compoxure->title,
     );
-
+    
     $form['context'] = array(
       '#type' => 'textfield',
       '#title' => t('Context'),
       '#description' => t('Context for the fragment.'),
-      '#default_value' => ($default_compoxure->rid) ? $default_compoxure->context_revision : $default_compoxure->context,
+      '#default_value' => $default_compoxure->context,
     );
 
     $form['content'] = array(
@@ -198,7 +198,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     $compoxure->is_current = !empty($compoxure_revision->is_current) ? $compoxure_revision->is_current : NULL;
     $compoxure->rid = !empty($compoxure_revision->rid) ? $compoxure_revision->rid : NULL;
     $compoxure->title_revision = !empty($compoxure_revision->title) ? $compoxure_revision->title : NULL;
-
+    $compoxure->context = !empty($compoxure_revision->context) ? $compoxure_revision->context : NULL;
     return $compoxure;
   }
 
@@ -432,6 +432,7 @@ function _save_compoxure($values) {
   $revision = new stdClass();
   $revision->name = $values['name'];
   $revision->title = $values['title'];
+  $revision->context = $values['context'];
   $revision->content = $values['content']['value'];
   $revision->content_format = $values['content']['format'];
   $revision->timestamp = strtotime('now');
@@ -479,6 +480,7 @@ function compoxure_form_build_preview_callback($form, &$form_state) {
     $variable['rid'] = $form_state['values']['rid'];
     $variable['name'] = $form_state['values']['name'];
     $variable['title'] = check_plain($form_state['values']['title']);
+    $variable['context'] = check_plain($form_state['values']['context']);
     $variable['content'] = check_markup($form_state['values']['content']['value'], $form_state['values']['content']['format']);
     $variable['in_preview'] = 1;
     return array("#markup" => '<div id="compoxure_preview">' . theme('compoxure', $variable) . '</div>');

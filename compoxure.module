@@ -10,6 +10,16 @@
 define('COMPOXURE', 'admin/structure/compoxure/list');
 
 /**
+ * Implements hook_services_resources().
+ */
+function compoxure_services_resources() {
+  return array(
+    'compoxure' => array(),
+  );
+}
+
+
+/**
  * Implements hook_ctools_plugin_directory().
  */
 function compoxure_ctools_plugin_directory($module, $type) {
@@ -90,6 +100,7 @@ function compoxure_load($compoxure_name, $rid = NULL) {
     $compoxure->is_current = !empty($compoxure_revision->is_current) ? $compoxure_revision->is_current : NULL;
     $compoxure->rid = !empty($compoxure_revision->rid) ? $compoxure_revision->rid : NULL;
     $compoxure->title_revision = !empty($compoxure_revision->title) ? $compoxure_revision->title : NULL;
+    $compoxure->context = !empty($compoxure_revision->context) ? $compoxure_revision->context : NULL;
     return $compoxure;
   }
 
