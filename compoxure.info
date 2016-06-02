@@ -1,0 +1,10 @@
+; $Id: snippet.info $
+name = Compoxure
+description = "Provides an exportable content type with endpoints to work with page compoxure."
+
+version = 7.x
+core = 7.x
+project = snippet
+dependencies[] = ctools
+dependencies[] = panels
+files[] = views/compoxure_views_handler_area_compoxure_handler.inc

@@ -1,0 +1,1 @@
+A module inspired by http://www.drupal.org/project/snippet
