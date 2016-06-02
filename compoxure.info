@@ -7,4 +7,5 @@ core = 7.x
 project = snippet
 dependencies[] = ctools
 dependencies[] = panels
+dependencies[] = services
 files[] = views/compoxure_views_handler_area_compoxure_handler.inc
