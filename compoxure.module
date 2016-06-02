@@ -1,0 +1,252 @@
+<?php
+/**
+ * @file
+ * The module file for the compoxure module.
+ */
+
+/**
+ * Menu item prefix.
+ */
+define('COMPOXURE', 'admin/structure/compoxure/list');
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function compoxure_ctools_plugin_directory($module, $type) {
+  // Load the plugins.
+  return "plugins/{$type}";
+}
+
+/**
+ * Implements hook_ctools_plugin_api().
+ *
+ * Tell CTools that we support the default_compoxure_presets API.
+ */
+function compoxure_ctools_plugin_api($owner, $api) {
+  if ($owner == 'compoxure' && $api == 'default_compoxure') {
+    return array('version' => 1);
+  }
+
+  return NULL;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function compoxure_views_api() {
+  return array(
+    'api' => 2,
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function compoxure_permission() {
+  $permissions = array();
+  $permissions['administer compoxure'] = array(
+    'title' => t('Administer compoxure'),
+    'description' => t('Perform administration tasks for compoxure.'),
+    'restrict access' => TRUE,
+  );
+  $permissions['manage compoxure'] = array(
+    'title' => t('Manage compoxure'),
+    'description' => t('Allow user to create, modify compoxure as well see revisions, revert to perticuler revision of the compoxure'),
+  );
+  return $permissions;
+}
+
+/**
+ * Loads the data for the compoxure.
+ *
+ * @param string $compoxure_name
+ *   Machine-understandable name of the compoxure to be loaded.
+ * @param int $rid
+ *   The revision ID, if needed.
+ *
+ * @return object|bool
+ *   FALSE if the compoxure name was not found. Otherwise, the compoxure as a ctools
+ *   object.
+ */
+function compoxure_load($compoxure_name, $rid = NULL) {
+  if ($compoxure_name) {
+    ctools_include('export');
+    $compoxure = ctools_export_crud_load('compoxure', $compoxure_name);
+
+    $compoxure_revision = db_select('compoxure_revision', 'sr')
+      ->fields('sr', array())
+      ->condition('name', $compoxure->name);
+
+    if ($rid) {
+      $compoxure_revision = $compoxure_revision->condition('rid', $rid);
+    }
+    else {
+      $compoxure_revision = $compoxure_revision->condition('is_current', 1);
+    }
+    $compoxure_revision = $compoxure_revision->execute()->fetch();
+    $compoxure->content = !empty($compoxure_revision->content) ? $compoxure_revision->content : '';
+    $compoxure->content_format = !empty($compoxure_revision->content_format) ? $compoxure_revision->content_format : NULL;
+    $compoxure->timestamp = !empty($compoxure_revision->timestamp) ? $compoxure_revision->timestamp : NULL;
+    $compoxure->is_current = !empty($compoxure_revision->is_current) ? $compoxure_revision->is_current : NULL;
+    $compoxure->rid = !empty($compoxure_revision->rid) ? $compoxure_revision->rid : NULL;
+    $compoxure->title_revision = !empty($compoxure_revision->title) ? $compoxure_revision->title : NULL;
+    return $compoxure;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function compoxure_theme() {
+  return array(
+    'compoxure' => array(
+      'variables' => array(),
+      'template' => 'compoxure',
+    ),
+  );
+}
+
+/**
+ * Preprocess function for theme_compoxure.
+ */
+function template_preprocess_compoxure(&$vars) {
+  // Build contextual links.
+  if (user_access('manage compoxure')) {
+    // Get the destination.
+    $destination = drupal_get_destination();
+
+    $links['compoxure-edit'] = array(
+      'title' => t('Edit Compoxure'),
+      'href' => COMPOXURE . "/" . $vars['name'] . "/edit",
+      'query' => $destination,
+      // @TODO: Finish Compoxure ajax editor (for in-place editing of compoxures)
+      // 'href' => 'compoxure/ajax/nojs/' . $vars['name'],
+      'attributes' => array(
+        // 'class' => array('use-ajax'),
+        'data-compoxure-name' => $vars['name'],
+      ),
+    );
+    $links['compoxure-revert'] = array(
+      'title' => t('Revisions'),
+      'href' => COMPOXURE . "/" . $vars['name'] . "/revision",
+      'query' => $destination,
+    );
+
+    $build = array(
+      '#prefix' => '<div class="contextual-links-wrapper">',
+      '#suffix' => '</div>',
+      '#theme' => 'links__contextual',
+      '#links' => $links,
+      '#attributes' => array('class' => array('contextual-links')),
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'compoxure') . '/css/compoxure.css'),
+        'library' => array(
+          array('contextual', 'contextual-links'),
+          // array('system', 'drupal.ajax'),
+          // array('system', 'jquery.form'),
+        ),
+      ),
+    );
+
+    $vars['admin_links'] = drupal_render($build);
+    $vars['classes_array'][] = 'contextual-links-region';
+    $vars['attributes_array']['class'][] = 'contextual-links-region';
+
+  }
+
+  // Add to attributes arrays for wrapper, title & content HTML elements.
+  $vars['classes_array'][] = drupal_html_class($vars['name']);
+  $vars['attributes_array']['class'][] = drupal_html_class($vars['name']);
+  $vars['attributes_array']['id'] = drupal_html_id($vars['name']);
+  $vars['title_attributes_array']['class'][] = 'compoxure-title';
+  $vars['content_attributes_array']['class'][] = 'compoxure-content';
+
+  // Add text to compoxure body when content is empty but user has
+  // edit permissions.
+  if (empty($vars['content'])) {
+    if (user_access('manage compoxure') || user_access('administer compoxure')) {
+      $vars['content'] = t('<em>Empty compoxure. Hover to edit.</em>');
+      $vars['classes_array'][] = 'compoxure-empty';
+      $vars['attributes_array']['class'][] = 'compoxure-empty';
+    }
+  }
+
+}
+
+/**
+ * Implements hook_menu().
+ */
+function compoxure_menu() {
+  $items = array();
+  $items['compoxure/ajax/%/%'] = array(
+    'title' => 'Compoxure Admin Callback',
+    'description' => 'AHAH callback for compoxure edit form',
+    'page callback' => 'compoxure_get_ajax_form',
+    'page arguments' => array(2, 3),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * AJAX callback for in-place editor.
+ *
+ * @param string $type
+ *   The type of request being made. Currently 'ajax' is the only option, and
+ *   the default.
+ * @param string $compoxure_name
+ *   The name of the compoxure for which to get an AJAX form.
+ */
+function compoxure_get_ajax_form($type = 'ajax', $compoxure_name = '') {
+  if ($type == 'ajax') {
+    $selector = drupal_html_class($compoxure_name);
+    $form = drupal_render(drupal_get_form('compoxure_edit_form', $compoxure_name));
+    $commands[] = ajax_command_replace('.' . $selector, $form);
+    $page = array('#type' => 'ajax', '#commands' => $commands);
+    ajax_deliver($page);
+  }
+}
+
+/**
+ * Get the compoxure edit form.
+ *
+ * @param string $compoxure_name
+ *   The name of the compoxure that is being edited.
+ *
+ * @return array|bool
+ *   FALSE if the compoxure name was not found. Otherwise, a Drupal edit form for
+ *   the compoxure.
+ */
+function compoxure_edit_form($form, &$form_state, $compoxure_name) {
+  if ($compoxure_name) {
+    $form = array();
+    $compoxure = compoxure_load($compoxure_name);
+
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Title'),
+      '#default_value' => ($compoxure->title_revision) ? $compoxure->title_revision : (($compoxure->title) ? $compoxure->title : ''),
+    );
+
+    $form['content'] = array(
+      '#type' => 'text_format',
+      '#title' => t('Content'),
+      '#default_value' => $compoxure->content,
+      '#format' => @$compoxure->content_format,
+      '#rows' => 10,
+    );
+
+    $form['preview'] = array(
+      '#type' => 'button',
+      '#value' => t('Preview'),
+    );
+
+    return $form;
+  }
+
+  return FALSE;
+}
