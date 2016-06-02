@@ -40,8 +40,21 @@ function compoxure_services_resources() {
 }
 
 function _compoxure_retrieve_fragment($context) {
-  
+
 }
+
+/**
+ * Implements hook_permission().
+ */
+function compoxure_permission() {
+  return array(
+    'retrieve compoxure fragment' => array(
+      'title' => t('Retrieve a fragment from compoxure'),
+      'description' => t('Allows users to retrieve a fragment from compoxure.'),
+    ),
+  );
+}
+
 
 /**
  * Implements hook_ctools_plugin_directory().
