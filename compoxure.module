@@ -39,8 +39,29 @@ function compoxure_services_resources() {
   );
 }
 
-function _compoxure_retrieve_fragment($context) {
+function compoxure_load_by_context($context) {
+  $compoxures = array();
+  $entities = db_select('compoxure', 'c')
+    ->fields('c', array())
+    ->condition('context', $context);
+  $entities = $entities->execute()->fetchAll();
+  foreach ($entities as $entity) {
+    $compoxures[] = compoxure_load($entity->name);
+  }
+  return $compoxures;
+}
 
+function _compoxure_retrieve_fragment($context) {
+  // Get all compoxure fragments for a given context
+  $json = array();
+  $compoxures = compoxure_load_by_context($context);
+  foreach ($compoxures as $compoxure) {
+    $content = check_markup($compoxure->content, $compoxure->content_format);
+    $json[$compoxure->name] = array(
+      'content' => $content,
+    );
+  }
+  return $json;
 }
 
 
