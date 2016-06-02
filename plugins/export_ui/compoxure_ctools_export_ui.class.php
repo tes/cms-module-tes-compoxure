@@ -126,19 +126,6 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#format' => @$default_compoxure->content_format,
     );
 
-    if (module_exists('token')) {
-      $form['token_help'] = array(
-        '#title' => t('CLICK HERE TO BROWSE AVAILABLE TOKENS'),
-        '#type' => 'fieldset',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-      $form['token_help']['help'] = array(
-        '#theme' => 'token_tree',
-        '#token_types' => array('node'),
-      );
-    }
-
     $form['preview'] = array(
       '#type' => 'button',
       '#limit_validation_errors' => array(),
