@@ -1,0 +1,229 @@
+<?php
+
+/**
+ * @file
+ * Compoxure Schema
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function compoxure_schema() {
+  $schema['compoxure'] = array(
+    'description' => 'Text-container exportable definitions.',
+    'export' => array(
+      'key' => 'name',
+      // Exports will be defined as $compoxure.
+      'identifier' => 'compoxure',
+      // Function hook name.
+      'default hook' => 'default_compoxure',
+      'api' => array(
+        'owner' => 'compoxure',
+        // Base name for api include files.
+        'api' => 'default_compoxure',
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
+    ),
+
+    'fields' => array(
+      'sid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary ID field for the table. Not used for anything except internal lookups.',
+        // Do not export database-only keys.
+        'no export' => TRUE,
+      ),
+      'admin_title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Unique ID for text-container exportible. Used to identify them programmatically.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Unique ID for text-container exportible. Used to identify them programmatically.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Title for compoxure.',
+      ),
+    ),
+    'primary key' => array('sid'),
+    'foreign keys' => array(
+      'compoxure_revision' => array(
+        'table' => 'compoxure_revision',
+        'columns' => array('rid' => 'rid'),
+      ),
+    ),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
+  $schema['compoxure_revision'] = array(
+    'description' => 'Stores information about each compoxure version.',
+
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Relationship key.',
+      ),
+      'rid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary ID for this compoxure version.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Title for compoxure.',
+      ),
+      'content' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'Exportable configuration data.',
+      ),
+      'content_format' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'timestamp' => array(
+        'description' => 'A Unix timestamp indicating when this version was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'is_current' => array(
+        'description' => 'Boolean indicating whether the node is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('rid'),
+    'indexes' => array(
+      'name' => array('name'),
+    ),
+    'foreign keys' => array(
+      'versioned_compoxure' => array(
+        'table' => 'compoxure',
+        'columns' => array('name' => 'name'),
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function compoxure_uninstall() {
+  drupal_uninstall_schema('compoxure');
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function compoxure_update_7001(&$sandbox) {
+  $content_format = array(
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => FALSE,
+  );
+  db_add_field('compoxure_revision', 'content_format', $content_format);
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Adds the machine_name as name in revision table to hold the revisions.
+ */
+function compoxure_update_7002(&$sandbox) {
+  $compoxures_machine_name = array(
+    'type' => 'varchar',
+    'length' => '255',
+  );
+  // db_add_field('compoxure_revision', 'name', $compoxures_machine_name);
+  db_drop_field('compoxure_revision', 'sid');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add name column to revision table.
+ */
+function compoxure_update_7003(&$sandbox) {
+  $content_format = array(
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => FALSE,
+  );
+  db_add_field('compoxure_revision', 'name', $content_format);
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add name column to revision table and Assign permissions to roles.
+ */
+function compoxure_update_7004(&$sandbox) {
+  // Add field to revision table to have a revision on Title field.
+  $content_format = array(
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => FALSE,
+  );
+  db_add_field('compoxure_revision', 'title', $content_format);
+
+  // Update if any compoxure has a reviosion.
+  ctools_include('export');
+  $options = ctools_export_crud_load_all('compoxure');
+
+  foreach ($options as $key => $value) {
+    $num_updated = db_update('compoxure_revision')
+      ->fields(array(
+        'title' => $value->title,
+      ))
+      ->condition('name', $key)
+      ->condition('is_current', 1)
+      ->execute();
+  }
+
+  // Assign the user permissions.
+  $permissions = user_role_permissions(user_roles());
+  foreach ($permissions as $rid => $permission) {
+    $user = user_role_load($rid);
+    $permission = array_keys($permission);
+
+    $check_count = 0;
+    if (in_array('access compoxure list', $permission)) {
+      $check_count++;
+      user_role_revoke_permissions($rid, array('access compoxure list'));
+    }
+
+    if (in_array('edit compoxure content', $permission)) {
+      $check_count++;
+      user_role_revoke_permissions($rid, array('edit compoxure content'));
+    }
+
+    if ($check_count) {
+      user_role_grant_permissions($rid, array('manage compoxure'));
+    }
+  }
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add index on name column in revision table.
+ */
+function compoxure_update_7005(&$sandbox) {
+  db_add_index('compoxure_revision', 'name', array('name'));
+}
