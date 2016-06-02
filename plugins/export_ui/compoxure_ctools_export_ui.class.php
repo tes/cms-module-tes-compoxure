@@ -112,6 +112,13 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#default_value' => ($default_compoxure->rid) ? $default_compoxure->title_revision : $default_compoxure->title,
     );
 
+    $form['context'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Context'),
+      '#description' => t('Context for the fragment.'),
+      '#default_value' => ($default_compoxure->rid) ? $default_compoxure->context_revision : $default_compoxure->context,
+    );
+
     $form['content'] = array(
       '#type' => 'text_format',
       '#title' => t('Content'),

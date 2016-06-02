@@ -222,6 +222,7 @@ function compoxure_get_ajax_form($type = 'ajax', $compoxure_name = '') {
  *   the compoxure.
  */
 function compoxure_edit_form($form, &$form_state, $compoxure_name) {
+  dpm($form);
   if ($compoxure_name) {
     $form = array();
     $compoxure = compoxure_load($compoxure_name);
@@ -230,6 +231,12 @@ function compoxure_edit_form($form, &$form_state, $compoxure_name) {
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#default_value' => ($compoxure->title_revision) ? $compoxure->title_revision : (($compoxure->title) ? $compoxure->title : ''),
+    );
+
+    $form['coxtext'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Context'),
+      '#default_value' => ($compoxure->context) ? $compoxure->context : (($compoxure->context) ? $compoxure->context : ''),
     );
 
     $form['content'] = array(
