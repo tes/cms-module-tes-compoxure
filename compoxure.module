@@ -222,7 +222,6 @@ function compoxure_get_ajax_form($type = 'ajax', $compoxure_name = '') {
  *   the compoxure.
  */
 function compoxure_edit_form($form, &$form_state, $compoxure_name) {
-  dpm($form);
   if ($compoxure_name) {
     $form = array();
     $compoxure = compoxure_load($compoxure_name);
