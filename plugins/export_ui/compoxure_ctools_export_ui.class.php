@@ -244,6 +244,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
    *   Array of operations to show in the table row.
    */
   public function list_build_row($item, &$form_state, $operations) {
+
     // Set up sorting.
     $name = $item->{$this->plugin['export']['key']};
     $schema = ctools_export_get_schema($this->plugin['schema']);
@@ -278,13 +279,10 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
         'class' => array('ctools-export-ui-title')
       );
     }
-    $this->rows[$name]['data'][] = array(
-      'data' => check_plain($name),
-      'class' => array('ctools-export-ui-name')
-    );
 
+    $compoxure = $this->load_item($name);
     $this->rows[$name]['data'][] = array(
-      'data' => check_plain($name),
+       'data' => check_plain($compoxure->context),
       'class' => array('ctools-export-ui-context')
     );
 
@@ -294,7 +292,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     );
 
     // To display whether this has any description.
-    $compoxure = $this->load_item($name);
+
     $label = "No";
     if ($compoxure->rid) {
       $label = 'Yes';
@@ -346,11 +344,6 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
         'class' => array('ctools-export-ui-title')
       );
     }
-
-    $header[] = array(
-      'data' => t('Name'),
-      'class' => array('ctools-export-ui-name')
-    );
 
     $header[] = array(
       'data' => t('Context'),
