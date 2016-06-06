@@ -86,6 +86,8 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
 
     // Adding parent element.
     parent::edit_form($form, $form_state);
+
+
     if ($form_state['form type'] == 'clone') {
       $default_compoxure = $this->load_item($form_state['original name']);
     }
@@ -116,6 +118,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     $form['context'] = array(
       '#type' => 'textfield',
       '#title' => t('Context'),
+      '#required' => TRUE,
       '#description' => t('Context for the fragment.'),
       '#default_value' => $default_compoxure->context,
     );
@@ -139,6 +142,8 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#weight' => 101,
     );
 
+    $form['info']['name']['#machine_name']['exists'] = 'compoxure_ctools_export_ui_edit_name_exists';
+
   }
 
   /**
@@ -146,17 +151,19 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
    */
   public function edit_form_validate(&$form, &$form_state) {
     $op = $form_state['op'];
+    $machine_name = $form_state['values']['name'] = $form_state['values']['name'] . '_' . $form_state['values']['context'];
     switch ($op) {
       case 'add':
         // Check if name already exists.
         ctools_include('export');
-        $preset = ctools_export_crud_load($form_state['plugin']['schema'], $form_state['values']['name']);
+        $preset = ctools_export_crud_load($form_state['plugin']['schema'], $machine_name);
         if ($preset) {
           form_set_error('name', 'Compoxure already exists. Compoxure names must be unique.');
         }
         break;
     }
   }
+
 
   /**
    * Loads the compoxure data.
@@ -277,6 +284,11 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     );
 
     $this->rows[$name]['data'][] = array(
+      'data' => check_plain($name),
+      'class' => array('ctools-export-ui-context')
+    );
+
+    $this->rows[$name]['data'][] = array(
       'data' => check_plain($item->{$schema['export']['export type string']}),
       'class' => array('ctools-export-ui-storage')
     );
@@ -339,6 +351,12 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       'data' => t('Name'),
       'class' => array('ctools-export-ui-name')
     );
+
+    $header[] = array(
+      'data' => t('Context'),
+      'class' => array('ctools-export-ui-context')
+    );
+
     $header[] = array(
       'data' => t('Storage'),
       'class' => array('ctools-export-ui-storage')
@@ -806,4 +824,13 @@ function _compoxure_version_get_previous_recent($compoxure) {
     ->range(0, 1);
   $revision_id = $query->execute()->fetchField();
   return $revision_id;
+}
+
+/**
+ * Test for #machine_name type to see if an export exists.
+ */
+function compoxure_ctools_export_ui_edit_name_exists($name, $element, &$form_state) {
+  $plugin = $form_state['plugin'];
+  $name = $name . '_' . $form_state['values']['context'];
+  return (empty($form_state['item']->export_ui_allow_overwrite) && ctools_export_crud_load($plugin['schema'], $name));
 }
