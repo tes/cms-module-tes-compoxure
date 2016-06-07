@@ -179,7 +179,6 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
     switch ($op) {
       case 'add':
         $machine_name = $form_state['values']['name'] = $form_state['values']['name'] . '_' . $form_state['values']['context'];
-        dpm($form_state);
         // Check if name already exists.
         ctools_include('export');
         $preset = ctools_export_crud_load($form_state['plugin']['schema'], $machine_name);
