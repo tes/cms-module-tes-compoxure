@@ -5,6 +5,25 @@
  * Class file for compoxure export ui
  */
 class compoxure_ctools_export_ui extends ctools_export_ui {
+
+  public function list_search_fields() {
+    $fields = array(
+      $this->plugin['export']['key'],
+    );
+
+    if (!empty($this->plugin['export']['admin_title'])) {
+      $fields[] = $this->plugin['export']['admin_title'];
+    }
+    if (!empty($this->plugin['export']['admin_description'])) {
+      $fields[] = $this->plugin['export']['admin_description'];
+    }
+
+    $fields[] = 'context';
+
+    return $fields;
+
+  }
+
   /**
    * Menu callback to determine if an operation is accessible.
    *
