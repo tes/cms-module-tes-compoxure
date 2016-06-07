@@ -77,6 +77,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
    * Adding or editing compoxure. A Drupal FAPI form.
    */
   public function edit_form(&$form, &$form_state) {
+
     // This is to show the preview.
     $form['compoxure_preview_wrapper'] = array(
       '#prefix' => '<div id="compoxure_preview">',
@@ -123,6 +124,11 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
       '#default_value' => $default_compoxure->context,
     );
 
+    //Prevent the editing of contexts once set.
+    if ($default_compoxure->sid) {
+      $form['context']['#disabled'] = TRUE;
+    }
+
     $form['content'] = array(
       '#type' => 'text_format',
       '#title' => t('Content'),
@@ -151,9 +157,10 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
    */
   public function edit_form_validate(&$form, &$form_state) {
     $op = $form_state['op'];
-    $machine_name = $form_state['values']['name'] = $form_state['values']['name'] . '_' . $form_state['values']['context'];
     switch ($op) {
       case 'add':
+        $machine_name = $form_state['values']['name'] = $form_state['values']['name'] . '_' . $form_state['values']['context'];
+        dpm($form_state);
         // Check if name already exists.
         ctools_include('export');
         $preset = ctools_export_crud_load($form_state['plugin']['schema'], $machine_name);
@@ -162,6 +169,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
         }
         break;
     }
+
   }
 
 
@@ -282,7 +290,7 @@ class compoxure_ctools_export_ui extends ctools_export_ui {
 
     $compoxure = $this->load_item($name);
     $this->rows[$name]['data'][] = array(
-       'data' => check_plain($compoxure->context),
+      'data' => check_plain($compoxure->context),
       'class' => array('ctools-export-ui-context')
     );
 
