@@ -193,7 +193,7 @@ function template_preprocess_compoxure(&$vars) {
     );
     $links['compoxure-revert'] = array(
       'title' => t('Revisions'),
-      'href' => COMPOXURE . "/" . $vars['name'] . "/revision",
+      'href' => COMPOXURE_PREFIX . "/" . $vars['name'] . "/revision",
       'query' => $destination,
     );
 
