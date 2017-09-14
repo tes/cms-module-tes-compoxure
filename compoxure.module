@@ -57,7 +57,7 @@ function _compoxure_retrieve_fragment($context) {
   $compoxures = compoxure_load_by_context($context);
 
   foreach ($compoxures as $compoxure) {
-    $content = check_markup($compoxure->content, $compoxure->content_format);
+    $content = $compoxure->content;
     $context_chars = -1 * strlen($context);
     $key = substr($compoxure->name, 0, $context_chars - 1);
     $json->{$key} = $content;
